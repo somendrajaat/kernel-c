@@ -1,15 +1,3 @@
-# Build artifacts
-*.bin
-*.o
 *.iso
-iso/
-*.elf
-
-# Temporary files
-*.tmp
-*.swp
-*~
-
-# OS generated files
-.DS_Store
-Thumbs.db
+isodir
+sysroot
