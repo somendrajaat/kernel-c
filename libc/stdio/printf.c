@@ -4,6 +4,53 @@
 #include <stdio.h>
 #include <string.h>
 
+// Helper function to convert unsigned integer to string
+static size_t uint_to_str(char* buffer, unsigned int value, unsigned int base) {
+    if (value == 0) {
+        buffer[0] = '0';
+        return 1;
+    }
+    
+    size_t len = 0;
+    while (value > 0) {
+        unsigned int digit = value % base;
+        buffer[len] = (digit < 10) ? '0' + digit : 'a' + (digit - 10);
+        value /= base;
+        len++;
+    }
+    
+    // Reverse the string
+    for (size_t i = 0; i < len / 2; i++) {
+        char temp = buffer[i];
+        buffer[i] = buffer[len - 1 - i];
+        buffer[len - 1 - i] = temp;
+    }
+    
+    return len;
+}
+
+// Helper function to convert signed integer to string
+static size_t int_to_str(char* buffer, int value) {
+    if (value == 0) {
+        buffer[0] = '0';
+        return 1;
+    }
+    
+    size_t len = 0;
+    unsigned int abs_value;
+    
+    if (value < 0) {
+        buffer[len++] = '-';
+        abs_value = (unsigned int)(-value);
+    } else {
+        abs_value = (unsigned int)value;
+    }
+    
+    // Convert the absolute value
+    size_t num_len = uint_to_str(buffer + len, abs_value, 10);
+    return len + num_len;
+}
+
 static bool print(const char* data, size_t length) {
 	const unsigned char* bytes = (const unsigned char*) data;
 	for (size_t i = 0; i < length; i++)
@@ -59,6 +106,56 @@ int printf(const char* restrict format, ...) {
 				return -1;
 			}
 			if (!print(str, len))
+				return -1;
+			written += len;
+		} else if (*format == 'd' || *format == 'i') {
+			format++;
+			int value = va_arg(parameters, int);
+			char buffer[32]; // Large enough for any int
+			size_t len = int_to_str(buffer, value);
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(buffer, len))
+				return -1;
+			written += len;
+		} else if (*format == 'u') {
+			format++;
+			unsigned int value = va_arg(parameters, unsigned int);
+			char buffer[32]; // Large enough for any unsigned int
+			size_t len = uint_to_str(buffer, value, 10);
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(buffer, len))
+				return -1;
+			written += len;
+		} else if (*format == 'x' || *format == 'X') {
+			format++;
+			unsigned int value = va_arg(parameters, unsigned int);
+			char buffer[32]; // Large enough for any hex value
+			size_t len = uint_to_str(buffer, value, 16);
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(buffer, len))
+				return -1;
+			written += len;
+		} else if (*format == 'p') {
+			format++;
+			void* ptr = va_arg(parameters, void*);
+			char buffer[32]; // Large enough for pointer
+			buffer[0] = '0';
+			buffer[1] = 'x';
+			size_t len = uint_to_str(buffer + 2, (unsigned int)ptr, 16) + 2;
+			if (maxrem < len) {
+				// TODO: Set errno to EOVERFLOW.
+				return -1;
+			}
+			if (!print(buffer, len))
 				return -1;
 			written += len;
 		} else {

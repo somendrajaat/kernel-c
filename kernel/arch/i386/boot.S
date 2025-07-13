@@ -25,7 +25,7 @@ stack_top:
 .type _start, @function
 _start:
 	movl $stack_top, %esp
-
+	call kernel_early_main
 	# Call the global constructors.
 	call _init
 
