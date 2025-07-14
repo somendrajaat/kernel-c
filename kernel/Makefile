@@ -1,7 +1,8 @@
 DEFAULT_HOST!=../default-host.sh
-HOST?=DEFAULT_HOST
+HOST?=$(DEFAULT_HOST)
 HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
 
+CC = i686-elf-gcc
 CFLAGS?=-O2 -g
 CPPFLAGS?=
 LDFLAGS?=
@@ -13,10 +14,10 @@ EXEC_PREFIX?=$(PREFIX)
 BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
-CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude
+CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -fno-stack-protector
+CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude -I../libc/include
 LDFLAGS:=$(LDFLAGS)
-LIBS:=$(LIBS) -nostdlib -lk -lgcc
+LIBS:=$(LIBS) -nostdlib -L../libc -lk -lgcc
 
 ARCHDIR=arch/$(HOSTARCH)
 
@@ -64,6 +65,11 @@ $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 
 .S.o:
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+	
+.s.o:
+	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+
+
 
 clean:
 	rm -f somendraOS.kernel
