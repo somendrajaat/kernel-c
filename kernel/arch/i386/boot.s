@@ -28,7 +28,10 @@ stack_top:
 .global _start
 .type _start, @function
 _start:
+  cli
  movl $stack_top, %esp
+ call gdt_install
+
  call kernel_early_main
  # Call the global constructors.
  call _init
@@ -37,7 +40,7 @@ _start:
  call kernel_main
 
  # Hang if kernel_main unexpectedly returns.
- cli
+
 1: hlt
  jmp 1b
 .size _start, . - _start
