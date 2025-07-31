@@ -56,6 +56,8 @@ You'll need these tools installed:
 **Keyboard input works** — type like a hacker.
 
 ## 📸 Screenshot
+<img width="722" height="395" alt="Screenshot 2025-07-31 095448" src="https://github.com/user-attachments/assets/dbfc0cf9-7453-4edf-aa01-3aa60481b46f" />
+
 
 
 
