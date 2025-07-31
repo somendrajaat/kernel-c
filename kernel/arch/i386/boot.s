@@ -28,19 +28,25 @@ stack_top:
 .global _start
 .type _start, @function
 _start:
-  cli
- movl $stack_top, %esp
- call gdt_install
+    # CRITICAL: Disable interrupts FIRST.
+    cli
+    # Set up the stack so we can call C functions.
+    movl $stack_top, %esp
+    push %ebx
 
- call kernel_early_main
- # Call the global constructors.
- call _init
+    call kernel_early_main
 
- # Transfer control to the main kernel.
- call kernel_main
+    # Call the global constructors.
+    call _init
 
- # Hang if kernel_main unexpectedly returns.
+    # Transfer control to the main kernel.
+    call kernel_main
 
+    # CRITICAL: Enable interrupts LAST, only after everything is set up.
+    # Now the CPU can safely handle hardware events.
+    sti
+
+    # Hang if kernel_main unexpectedly returns.
 1: hlt
- jmp 1b
+    jmp 1b
 .size _start, . - _start

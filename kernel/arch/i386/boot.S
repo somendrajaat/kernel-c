@@ -1,9 +1,9 @@
 # Declare constants for the multiboot header.
-.set ALIGN,    1<<0             # align loaded modules on page boundaries
-.set MEMINFO,  1<<1             # provide memory map
-.set FLAGS,    ALIGN | MEMINFO  # this is the Multiboot 'flag' field
-.set MAGIC,    0x1BADB002       # 'magic number' lets bootloader find the header
-.set CHECKSUM, -(MAGIC + FLAGS) # checksum of above, to prove we are multiboot
+.set ALIGN,    1<<0              # align loaded modules on page boundaries
+.set MEMINFO,  1<<1              # provide memory map
+.set FLAGS,    ALIGN | MEMINFO   # this is the Multiboot 'flag' field
+.set MAGIC,    0x1BADB002        # 'magic number' lets bootloader find the header
+.set CHECKSUM, -(MAGIC + FLAGS)  # checksum of above, to prove we are multiboot
 
 # Declare a header as in the Multiboot Standard.
 .section .multiboot
@@ -24,19 +24,25 @@ stack_top:
 .global _start
 .type _start, @function
 _start:
- 	cli    
-	movl $stack_top, %esp
-	call gdt_install
+    # CRITICAL: Disable interrupts FIRST.
+    cli
+    # Set up the stack so we can call C functions.
+    movl $stack_top, %esp
+    push %ebx
 
-	call kernel_early_main
-	# Call the global constructors.
-	call _init
+    call kernel_early_main
+    
+    # Call the global constructors.
+    call _init
 
-	# Transfer control to the main kernel.
-	call kernel_main
+    # Transfer control to the main kernel.
+    call kernel_main
 
-	# Hang if kernel_main unexpectedly returns.
+    # CRITICAL: Enable interrupts LAST, only after everything is set up.
+    # Now the CPU can safely handle hardware events.
+    sti
 
-1:	hlt
-	jmp 1b
+    # Hang if kernel_main unexpectedly returns.
+1:  hlt
+    jmp 1b
 .size _start, . - _start

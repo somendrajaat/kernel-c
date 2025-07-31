@@ -15,7 +15,7 @@ BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -fno-stack-protector
-CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude -I../libc/include
+CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude -I../libc/include -Iarch/i386
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -L../libc -lk -lgcc
 
